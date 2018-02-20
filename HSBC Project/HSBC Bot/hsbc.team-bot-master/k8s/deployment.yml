@@ -1,0 +1,27 @@
+apiVersion: apps/v1beta1
+
+kind: Deployment
+metadata:
+  name: hsbc-bot-webhook
+  namespace: develop
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels: # labels to select/identify the deployment
+        app: hsbc-bot-webhook
+    spec:     # pod spec
+      containers:
+      - name: hsbc-bot-webhook
+        image: gcr.io/hsbc-bot-dev/hsbc-bot-webhook:docker # image we pushed
+        resources:
+          limits:
+            memory: "500Mi"
+            cpu: "100m"
+        imagePullPolicy: Always
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+        ports:
+        - containerPort: 8080

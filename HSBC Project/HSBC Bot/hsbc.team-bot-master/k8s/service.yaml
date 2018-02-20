@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: hsbc-bot-webhook
+  namespace: develop
+spec:
+  type: NodePort
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+    name: hook
+  selector:
+    app: hsbc-bot-webhook
+

@@ -1,0 +1,8 @@
+env: flex
+runtime: custom
+network:
+  name: production
+resources:
+  cpu: 2
+  memory_gb: 1.4
+  disk_size_gb: 10

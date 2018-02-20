@@ -1,0 +1,450 @@
+swagger: "2.0"
+
+info:
+  version: "0.2.4"
+  title: HSBC API
+  description: A mock RESTful API for HSBC services
+
+schemes:
+  - http
+  - https
+
+basePath: /v1
+
+consumes:
+  - application/json
+produces:
+  - application/json
+
+paths:
+  /content/{subject}:
+    get:
+      summary: Text content
+      description: HSBC proprietary text content relating to given subject
+      parameters:
+        - name: subject
+          in: path
+          description: A HSBC related subject name
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/Content'
+        '500':
+          description: Error message returned
+
+  /atm:
+    get:
+      summary: ATMs
+      description: Returns all ATMs
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/ATMList'
+
+
+  /calculate/{product}:
+    get:
+      summary: Calculator Types
+      description: |
+        Returns a list of publically available calculators for a given product
+      parameters:
+        - name: product
+          in: path
+          description: A banking product name
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/CalculatorList'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+  /calculate/{product}/{id}:
+    get:
+      summary: A Calculation Result
+      description: |
+        Returns the result of the product function calculator given the parameters in the body.
+        Specify calculator function parameters as query strings, whose keys are obtained from
+        the calculate/product endpoint
+      parameters:
+        - name: product
+          in: path
+          description: A banking product name
+          required: true
+          type: string
+        - name: id
+          in: path
+          description: The unique id of a product function calculator
+          required: true
+          type: string
+      responses:
+        '201':
+          description: The result of the requested calculation
+          schema:
+            $ref: '#/definitions/CalculationResult'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+  /appointments:
+    post:
+      summary: Books an appointment.
+      parameters:
+        - in: body
+          name: appointmentBooking
+          schema:
+            $ref: '#/definitions/AppointmentBooking'
+      responses:
+        '201':
+          description: An AppointmentInfo object
+          schema:
+            $ref: '#/definitions/AppointmentInfo'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+  /xrates:
+    get:
+      summary: Exchangeable currencies
+      description: Returns list of exchangable currencies
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/CurrencyList'
+
+
+  /xrates/{from}:
+    get:
+      summary: |
+        Returns the buying and selling rates to all supported currencies from
+        the specified one
+      parameters:
+        - name: from
+          in: path
+          description: Three letter abbreviation of a supported currency
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/ExchangeRateInfo'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+  /xrates/{from}/{to}:
+    get:
+      summary: Returns the exchange rate between the base and target currencies
+      parameters:
+        - name: from
+          in: path
+          required: true
+          type: string
+        - name: to
+          in: path
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/DetailedExchangeRate'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+  /xrates/convert:
+    get:
+      summary: Converts a specified amount from a selling to a buying currency
+      parameters:
+        - name: from
+          description: |
+            Three letter abbreviation of a supported currency to sell
+          in: query
+          required: true
+          type: string
+        - name: to
+          description: |
+            Three letter abbreviation of a supported currency to buy
+          in: query
+          required: true
+          type: string
+        - name: amount
+          description: |
+            The desired amount to exchange from selling to buying currency
+          in: query
+          required: true
+          type: number
+      responses:
+        '200':
+          description: Successful conversion response
+          schema:
+            $ref: '#/definitions/Conversion'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+responses:
+
+  Unauthorized:
+    description: The client is not authorized to access the specified resource
+    schema:
+      $ref: '#/definitions/Error'
+
+definitions:
+  Content:
+    type: object
+    properties:
+      key:
+        type: string
+      simpleResponse:
+        type: string
+      speech:
+        type: string
+      text:
+        type: string
+      title:
+        type: string
+      subtitle:
+        type: string
+      imageURL:
+        type: string
+      suggestions:
+        type: array
+        items:
+          type: string
+      buttonTitle:
+        type: array
+        items:
+          type: string
+      buttonURL:
+        type: array
+        items:
+          type: string
+
+  Location:
+    type: object
+    properties:
+      lon:
+        type: number
+      lat:
+        type: number
+
+  Address:
+    type: object
+    properties:
+      street:
+        type: string
+      number:
+        type: string
+      city:
+        type: string
+      province:
+        type: string
+
+  ATM:
+    type: object
+    properties:
+      name:
+        type: string
+      location:
+        $ref: '#/definitions/Location'
+      address:
+        $ref: '#/definitions/Address'
+
+  ATMList:
+    type: object
+    properties:
+      atms:
+        type: array
+        items:
+          $ref: '#/definitions/ATM'
+
+  Error:
+    type: object
+    properties:
+      info:
+        type: string
+        description: Information about the error
+
+  CalculationResult:
+    type: object
+    properties:
+      result:
+        type: number
+      details:
+        type: string
+
+  CalculatorQuery:
+    type: object
+    description: |
+      An object containing the necessary parameters as key-value pairs for a particular
+      product function
+
+  AppointmentBooking:
+    type: object
+    properties:
+      contactInfo:
+        $ref: '#/definitions/ContactInfo'
+      details:
+        type: string
+        description: Additional information for the appointment
+    required:
+      - contactInfo
+
+  CalculatorList:
+    type: object
+    properties:
+      product:
+        type: string
+        description: The product or product category this calculator belongs to
+      calculators:
+        type: array
+        items:
+          $ref: '#/definitions/Calculator'
+
+  Calculator:
+    type: object
+    description: A banking calculator for a particular product function
+    properties:
+      id:
+        type: string
+        description: Unique ID of this calculator
+      name:
+        type: string
+        description: The particular function this calculator computes
+      parameters:
+        type: array
+        description: |
+          The list of named parameters to include in a CalculatorQuery to this Calculator.
+          All parameters are numbers.
+        items:
+          type: string
+
+  ExchangeRate:
+    type: object
+    description: |
+      The buying and selling rates to/from a target currency, given some other currency
+    properties:
+      code:
+        type: string
+        description: Three letter abbreviation of the target currency
+      buy:
+        type: number
+      sell:
+        type: number
+
+  ExchangeRateInfo:
+    type: object
+    properties:
+      from:
+        description: The currency to find exchange rates for
+        $ref: '#/definitions/Currency'
+      rates:
+        type: array
+        items:
+          $ref: '#/definitions/ExchangeRate'
+
+  DetailedExchangeRate:
+    type: object
+    description: |
+      Exchange rate from a base currency to target currency, including their full names
+    properties:
+      from:
+        $ref: '#/definitions/Currency'
+      to:
+        $ref: '#/definitions/Currency'
+      buy:
+        type: number
+      sell:
+        type: number
+      timestamp:
+        type: string
+
+  Currency:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Full name of the currency
+      code:
+        description: Three letter abbreviation for the currency
+        type: string
+
+  CurrencyList:
+    type: object
+    properties:
+      currencies:
+        type: array
+        items:
+          $ref: '#/definitions/Currency'
+
+  Conversion:
+    type: object
+    description: Conversion from one currency to another
+    properties:
+      from:
+        $ref: '#/definitions/Currency'
+        description: Currency to sell
+      to:
+        $ref: '#/definitions/Currency'
+        description: Currency to buy
+      amount:
+        type: number
+        description: Amount to convert
+      conversion:
+        description: |
+          Conversion of the specified amount from the desired to target currency
+        type: number
+
+  ContactInfo:
+    type: object
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      email:
+        type: string
+      phone:
+        type: string
+    required:
+      - firstName
+      - lastName
+      - email
+
+  AppointmentInfo:
+    type: object
+    description: Reference information for a booked appointment
+    properties:
+      reference:
+        type: string
+      date:
+        type: string

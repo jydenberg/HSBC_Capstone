@@ -1,0 +1,11 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: hsbc-bot-webhook
+  namespace: develop
+spec:
+  tls:
+  - secretName: hsbc-webhook-tls
+  backend:
+    serviceName: hsbc-bot-webhook
+    servicePort: 8080
